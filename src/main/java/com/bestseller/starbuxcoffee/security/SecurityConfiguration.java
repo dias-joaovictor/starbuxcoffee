@@ -1,5 +1,8 @@
 package com.bestseller.starbuxcoffee.security;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +35,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserRepository repository;
 
+	private List<String> bypassAllFilters;
+
+	private List<String> bypassAllTokenAuthFilter;
+
 	@Override
 	@Bean
 	protected AuthenticationManager authenticationManager() throws Exception {
@@ -45,17 +52,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
+		this.bypassAllFilters = new ArrayList<>();
+		this.bypassAllTokenAuthFilter = new ArrayList<>();
+
+		this.bypassAllFilters.add("/auth/**");
+		this.bypassAllFilters.add("/auth/test/**");
+		this.bypassAllFilters.add("/actuator/health");
+
+		this.bypassAllTokenAuthFilter.addAll(this.bypassAllFilters);
+
 		http.authorizeRequests()//
 				.antMatchers(HttpMethod.POST, "/auth/**").permitAll()//
 				.antMatchers("/auth/test/**").permitAll()//
 				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
+				.antMatchers("/admin/**").authenticated()//
 				.anyRequest().authenticated()//
 				.and()//
 				.csrf().disable()//
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//
 				.and()//
 				.addFilterBefore(//
-						new TokenAuthenticationFilter(this.tokenService, this.repository),
+						new TokenAuthenticationFilter(this.tokenService, this.repository,
+								this.bypassAllTokenAuthFilter),
 						UsernamePasswordAuthenticationFilter.class);
 	}
 
