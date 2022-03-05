@@ -17,7 +17,7 @@ import com.bestseller.starbuxcoffee.core.ExceptionResponse;
 @RestController
 public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler(Exception.class)
+	@ExceptionHandler({ Exception.class, Throwable.class })
 	public final ResponseEntity<Object> handleAllException(final Exception ex, final WebRequest request) {
 		return this.getResponseWithStatusCode(ex, request, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
