@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bestseller.starbuxcoffee.core.exception.BusinessException;
@@ -32,7 +31,7 @@ public class CartService {
 		this.validateCustomerInfo(customerInfoDTO);
 
 		final Cart cart = new Cart();
-		cart.setCustomerId(new BCryptPasswordEncoder(10).encode(customerInfoDTO.getCustomerId()));
+		cart.setCustomerId(customerInfoDTO.getCustomerId());
 		cart.setExpiresAt(LocalDateTime.now().plusMinutes(20));
 		this.repository.saveAndFlush(cart);
 
@@ -107,10 +106,8 @@ public class CartService {
 	}
 
 	private void checkInfos(final CustomerInfoDTO customerInfo, final Cart cart) {
-		try {
-			new BCryptPasswordEncoder().matches(customerInfo.getCustomerId(), cart.getCustomerId());
-		} catch (final Exception e) {
-			throw new BusinessException("Your customer id is inválida. It's impossible to checkout");
+		if (!StringUtils.equalsIgnoreCase(customerInfo.getCustomerId(), cart.getCustomerId())) {
+			throw new BusinessException("Your customer id is invalid. It's impossible to checkout");
 		}
 	}
 
