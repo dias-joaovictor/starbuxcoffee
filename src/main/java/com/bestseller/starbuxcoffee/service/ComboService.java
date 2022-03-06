@@ -158,7 +158,8 @@ public class ComboService {
 
 	private void removeAllCombos(final Order order, final OrderDTO orderDTO) {
 		final List<Combo> combos = this.comboRepository.findAllByOrder(order);
-		combos.forEach(this.comboRepository::delete);
+		combos.stream().filter(combo -> combo.getPrincipalCombo() != null).forEach(this.comboRepository::delete);
+		combos.stream().filter(combo -> combo.getPrincipalCombo() == null).forEach(this.comboRepository::delete);
 	}
 
 }
