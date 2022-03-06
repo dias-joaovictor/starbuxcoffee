@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootPass
+      - MYSQL_DATABASE=starbux-db
+      - MYSQL_USER=starbux_user
+      - MYSQL_PASSWORD=starbux_pass
+    command: --lower_case_table_names=1
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+volumes:
+  logvolume01: {}

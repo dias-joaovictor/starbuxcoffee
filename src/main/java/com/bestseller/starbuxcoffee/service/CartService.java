@@ -41,7 +41,6 @@ public class CartService {
 			if (cart.get().getExpiresAt().isBefore(LocalDateTime.now())) {
 				throw new BusinessException("Cart is expired. Open a new Cart.");
 			}
-
 			return cart.get().toDTO();
 		}
 

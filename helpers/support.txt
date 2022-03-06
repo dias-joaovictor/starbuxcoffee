@@ -9,3 +9,7 @@ Pass: techlead
 
 User: admin@bestseller.com
 Pass: adminbestseller
+
+
+
+entrypoint: "/usr/sbin/mysqld --lower_case_table_names=1"
