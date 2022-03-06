@@ -34,7 +34,7 @@ public class User implements UserDetails {
 	private String password;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "stb_user_profile", joinColumns = { @JoinColumn(name = "userid") }, inverseJoinColumns = {
+	@JoinTable(name = "STB_USER_PROFILE", joinColumns = { @JoinColumn(name = "userid") }, inverseJoinColumns = {
 			@JoinColumn(name = "profileid") })
 	private Set<Profile> profiles;
 
