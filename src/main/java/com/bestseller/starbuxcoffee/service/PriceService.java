@@ -87,4 +87,15 @@ public class PriceService {
 		}
 	}
 
+	public void deleteProductPrices(final Product product) {
+		this.valideProduct(product);
+		final List<Price> prices = this.repository.findAllValidProductPrice(product);
+		prices.stream().forEach(price -> {
+			price.expire();
+			this.repository.save(price);
+		});
+
+		this.repository.flush();
+	}
+
 }

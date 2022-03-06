@@ -33,8 +33,7 @@ create table STB_PRODUCT(
     deletedAt datetime null,
     createdAt datetime not null,
     updatedAt datetime null,
-    constraint stb_product_pk primary key (id),
-    constraint stb_product_un unique (type, name)
+    constraint stb_product_pk primary key (id)
 );
 
 create table STB_PRICE(
@@ -47,6 +46,16 @@ create table STB_PRICE(
     updatedAt datetime null,
     constraint stb_price_pk primary key (id),
     constraint stb_price_fk foreign key (productId) references STB_PRODUCT(id)
+);
+
+create table STB_CART(
+	id varchar(36) not null,
+    customerId varchar(255) not null,
+	expirationDate datetime null,
+    expiresAt datetime not null,
+    createdAt datetime not null,
+    updatedAt datetime null,
+    constraint stb_cart_pk primary key (id)
 );
 
 

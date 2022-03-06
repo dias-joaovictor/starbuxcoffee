@@ -3,6 +3,7 @@ package com.bestseller.starbuxcoffee.service;
 import static java.text.MessageFormat.format;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,9 @@ public class ProductService {
 			throw new BusinessException("Product Already exists. Use the PUT method to update.");
 		}
 
-		if (this.productRepository.findByProductTypeAndName(product.getProductType(), product.getName()) != null) {
+		if (this.productRepository.findByProductTypeAndNameNotCancelled(//
+				product.getProductType(), //
+				product.getName()) != null) {
 			throw new BusinessException(format(//
 					"Product with Type: {0} and Name: {1} already exists", //
 					product.getProductType().name(), //
@@ -56,16 +59,18 @@ public class ProductService {
 	}
 
 	public ProductsDTO getAllValidProducts() {
-		return new ProductsDTO(this.priceService.getAllValidProductPrices().stream().map(price -> {
-			return price.toProductDTO();
-		}).collect(Collectors.toList()));
+		return new ProductsDTO(this.priceService//
+				.getAllValidProductPrices()//
+				.stream()//
+				.map(Price::toProductDTO) //
+				.collect(Collectors.toList()));
 	}
 
 	public void updateProduct(final ProductDTO productDTO) {
 
 		final Product productToUpdate = Product.fromDTO(productDTO);
 
-		final Product productFound = this.productRepository.findById(productDTO.getId())
+		final Product productFound = this.productRepository.findByIdProductNotCancelled(productDTO.getId())
 				.orElseThrow(() -> new BusinessException("Product not found"));
 
 		if (!productToUpdate.getName().equals(productFound.getName())) {
@@ -91,6 +96,18 @@ public class ProductService {
 		this.productRepository.save(productFound);
 
 		this.priceService.updateProductPriceIfNecessary(productFound, productDTO.getPrice());
+
+	}
+
+	public void deleteProduct(final int id) {
+		final Optional<Product> productFound = this.productRepository.findByIdProductNotCancelled(id);
+
+		if (productFound.isPresent()) {
+			productFound.get().cancel();
+			this.priceService.deleteProductPrices(productFound.get());
+			this.productRepository.save(productFound.get());
+			this.productRepository.flush();
+		}
 
 	}
 

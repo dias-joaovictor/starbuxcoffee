@@ -136,4 +136,8 @@ public class Product extends BaseModel {
 		return productDTO;
 	}
 
+	public void cancel() {
+		this.setDeletedAt(LocalDateTime.now());
+	}
+
 }

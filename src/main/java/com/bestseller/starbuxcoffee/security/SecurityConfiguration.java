@@ -57,6 +57,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 		this.bypassAllFilters.add("/auth/**");
 		this.bypassAllFilters.add("/auth/test/**");
+		this.bypassAllFilters.add("/cart/**");
 		this.bypassAllFilters.add("/actuator/health");
 
 		this.bypassAllTokenAuthFilter.addAll(this.bypassAllFilters);
@@ -64,6 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()//
 				.antMatchers(HttpMethod.POST, "/auth/**").permitAll()//
 				.antMatchers("/auth/test/**").permitAll()//
+				.antMatchers("/cart/**").permitAll()//
 				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
 				.antMatchers("/admin/**").authenticated()//
 				.anyRequest().authenticated()//
