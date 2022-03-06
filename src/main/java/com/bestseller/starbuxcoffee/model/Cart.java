@@ -22,9 +22,6 @@ public class Cart extends BaseModel {
 
 	private static final long serialVersionUID = -537976388770839236L;
 
-//	@Id
-//	@GeneratedValue(strategy = GenerationType.AUTO)
-//	@Column(name = "id", updatable = false, unique = true, nullable = false)
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -37,6 +34,9 @@ public class Cart extends BaseModel {
 
 	@Column(name = "expiresAt", nullable = false)
 	private LocalDateTime expiresAt;
+
+	@Column(name = "checkoutAt", nullable = true)
+	private LocalDateTime checkoutAt;
 
 	public Cart() {
 		super();
@@ -72,6 +72,18 @@ public class Cart extends BaseModel {
 		dto.setExpiresAt(this.getExpiresAt());
 		dto.setRemainingTime(Duration.between(LocalDateTime.now(), this.getExpiresAt()).toMinutes());
 		return dto;
+	}
+
+	public LocalDateTime getCheckoutAt() {
+		return this.checkoutAt;
+	}
+
+	public void setCheckoutAt(final LocalDateTime checkoutAt) {
+		this.checkoutAt = checkoutAt;
+	}
+
+	public void checkout() {
+		this.setCheckoutAt(LocalDateTime.now());
 	}
 
 }

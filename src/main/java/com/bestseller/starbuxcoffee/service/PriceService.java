@@ -98,4 +98,14 @@ public class PriceService {
 		this.repository.flush();
 	}
 
+	public Price getProductPriceById(final int priceId) {
+		final Price price = this.repository.findById(priceId).orElse(null);
+
+		if (price == null || price.getProduct().getDeletedAt() != null) {
+			throw new BusinessException("Product is not valid");
+		}
+
+		return price;
+	}
+
 }

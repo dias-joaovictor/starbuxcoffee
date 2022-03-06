@@ -63,7 +63,7 @@ public class CartClientIdFilter extends StarbuxBaseFilter {
 			throw new BusinessException("CartClientId is invalid.");
 		}
 
-		this.cartService.getCart(uuid);
+		this.cartService.validateClientCartId(uuid);
 	}
 
 	@Override

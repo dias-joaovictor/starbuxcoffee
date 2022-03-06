@@ -100,6 +100,7 @@ public class Price extends BaseModel {
 	public ProductDTO toProductDTO() {
 		final ProductDTO dto = this.getProduct().toProductDTO();
 		dto.setPrice(this.getValue());
+		dto.setPriceId(this.getId());
 		return dto;
 	}
 

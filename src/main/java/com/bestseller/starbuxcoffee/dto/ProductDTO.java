@@ -2,11 +2,16 @@ package com.bestseller.starbuxcoffee.dto;
 
 import java.io.Serializable;
 
+import com.bestseller.starbuxcoffee.model.Price;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class ProductDTO implements Serializable {
 
 	private static final long serialVersionUID = -5140701190286864359L;
 
 	private int id;
+
+	private int priceId;
 
 	private String productType;
 
@@ -17,6 +22,9 @@ public class ProductDTO implements Serializable {
 	private int priority;
 
 	private double price;
+
+	@JsonIgnore
+	private Price priceItem;
 
 	public ProductDTO() {
 		super();
@@ -68,6 +76,24 @@ public class ProductDTO implements Serializable {
 
 	public void setPrice(final double price) {
 		this.price = price;
+	}
+
+	public int getPriceId() {
+		return this.priceId;
+	}
+
+	public void setPriceId(final int priceId) {
+		this.priceId = priceId;
+	}
+
+	@JsonIgnore
+	public void setPriceItem(final Price priceItem) {
+		this.priceItem = priceItem;
+	}
+
+	@JsonIgnore
+	public Price getPriceItem() {
+		return this.priceItem;
 	}
 
 }

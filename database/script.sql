@@ -51,12 +51,38 @@ create table STB_PRICE(
 create table STB_CART(
 	id varchar(36) not null,
     customerId varchar(255) not null,
-	expirationDate datetime null,
     expiresAt datetime not null,
+    checkoutAt datetime null,
     createdAt datetime not null,
     updatedAt datetime null,
     constraint stb_cart_pk primary key (id)
 );
+
+
+create table STB_ORDER(
+	id varchar(36) not null,
+    cartId varchar(36) not null,
+	totalPrice decimal(19,2) not null,
+    finalPrice decimal(19,2) not null,
+    createdAt datetime not null,
+    updatedAt datetime null,
+    constraint stb_order_pk primary key (id),
+    constraint stb_order_cart_fk foreign key (cartId) references STB_CART(id)
+);
+
+create table STB_COMBO(
+	id varchar(36) not null,
+    orderId varchar(36) not null,
+    priceId int not null,
+    principalComboId varchar(36) null,
+    createdAt datetime not null,
+    updatedAt datetime null,
+    constraint stb_combo_pk primary key (id),
+    constraint stb_combo_order_fk foreign key (orderId) references STB_ORDER(id),
+    constraint stb_combo_autoref_fk foreign key (principalComboId) references STB_COMBO(id)
+);
+
+
 
 
 SELECT 
@@ -120,4 +146,5 @@ where not exists (
     where STB_USER_PROFILE.userid = STB_USER.id
 )
 	and STB_PROFILE.name = 'ADMIN-ROLE';
+
 

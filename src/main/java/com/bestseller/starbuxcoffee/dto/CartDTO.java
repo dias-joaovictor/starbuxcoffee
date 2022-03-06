@@ -13,6 +13,8 @@ public class CartDTO implements Serializable {
 
 	private long remainingTime;
 
+	private OrderDTO order;
+
 	public CartDTO() {
 		super();
 	}
@@ -39,6 +41,14 @@ public class CartDTO implements Serializable {
 
 	public void setRemainingTime(final long remainingTime) {
 		this.remainingTime = remainingTime;
+	}
+
+	public OrderDTO getOrder() {
+		return this.order;
+	}
+
+	public void setOrder(final OrderDTO order) {
+		this.order = order;
 	}
 
 }
