@@ -66,6 +66,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		this.bypassAllFilters.add("/auth/**");
 		this.bypassAllFilters.add("/auth/test/**");
 		this.bypassAllFilters.add("/cart/**");
+		this.bypassAllFilters.add("/h2-console/**");
+		this.bypassAllFilters.add("/h2/**");
 		this.bypassAllFilters.add("/actuator/health");
 
 		this.shouldFilterCartFilter.add("/cart/**");
@@ -76,6 +78,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.POST, "/auth/**").permitAll()//
 				.antMatchers("/auth/test/**").permitAll()//
 				.antMatchers("/cart/**").permitAll()//
+				.antMatchers("/h2/**").permitAll() //
 				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
 				.antMatchers("/admin/**").authenticated()//
 				.anyRequest().authenticated()//
@@ -89,6 +92,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 						UsernamePasswordAuthenticationFilter.class)
 				.addFilterAfter(new CartClientIdFilter(this.shouldFilterCartFilter, this.cartService),
 						TokenAuthenticationFilter.class);
+		http.headers().frameOptions().disable();
 	}
 
 	@Override

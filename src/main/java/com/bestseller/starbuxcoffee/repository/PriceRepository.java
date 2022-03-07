@@ -18,7 +18,7 @@ public interface PriceRepository extends JpaRepository<Price, Integer> {
 	@Query("select price from Price price where price.expirationDate is null and price.product.deletedAt is null order by price.product.priority, price.product.id asc")
 	List<Price> findAllValidProductPrices();
 
-	@Query("select price from Price price where price.product.id = ?1 and price.product.deletedAt is null order by price.startValidDate desc, price.product.id asc")
+	@Query("select price from Price price where price.product.id = ?1 and price.product.deletedAt is null and price.expirationDate is null order by price.startValidDate desc, price.product.id asc")
 	List<Price> findAllValidProductPrices(int productId);
 
 }
