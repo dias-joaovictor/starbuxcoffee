@@ -33,10 +33,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.bestseller.starbuxcoffee.core.BasicMathOperations;
+import com.bestseller.starbuxcoffee.dto.AmountOrderPerCustomerDTO;
+import com.bestseller.starbuxcoffee.dto.AmountOrderPerCustomerResponse;
+import com.bestseller.starbuxcoffee.dto.AmountPerOrderResponse;
 import com.bestseller.starbuxcoffee.dto.CartDTO;
 import com.bestseller.starbuxcoffee.dto.ComboDTO;
 import com.bestseller.starbuxcoffee.dto.ComboItemDTO;
 import com.bestseller.starbuxcoffee.dto.CustomerInfoDTO;
+import com.bestseller.starbuxcoffee.dto.MostUsedToppingsForDrinkDTO;
+import com.bestseller.starbuxcoffee.dto.MostUsedToppingsForDrinkResponse;
 import com.bestseller.starbuxcoffee.dto.ProductDTO;
 import com.bestseller.starbuxcoffee.dto.ProductsDTO;
 import com.bestseller.starbuxcoffee.repository.PriceRepository;
@@ -83,7 +88,7 @@ class StarbuxCoffeeApplicationTests {
 		final List<User> users = new ArrayList<>();
 		this.userRepository.findAll().forEach(users::add);
 		assertThat(users.size()).isEqualTo(3);
-		final TokenDTO token = this.getToken();
+		final TokenDTO token = this.login();
 		ProductsDTO products = this.getProducts();
 
 		assertNotNull(products);
@@ -791,6 +796,121 @@ class StarbuxCoffeeApplicationTests {
 
 	}
 
+	@Test
+	@Order(3)
+	void mostUsedToppingsTest() {
+
+		try {
+			this.getMostUsedToppingsForDrinkResponse(new TokenDTO("b", "dummy"));
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Invalid Token."));
+		}
+
+		final TokenDTO token = this.login();
+
+		final MostUsedToppingsForDrinkResponse response = this.getMostUsedToppingsForDrinkResponse(token);
+
+		assertNotNull(response);
+		assertEquals(2, response.getData().size());
+
+		MostUsedToppingsForDrinkDTO line = response.getData().stream().filter(item -> item.getDrink().equals(DRINK_3))
+				.findAny().get();
+		assertEquals(TOPPING_1, line.getTopping());
+		assertEquals(3, line.getCount());
+
+		line = response.getData().stream().filter(item -> item.getDrink().equals(DRINK_2)).findAny().get();
+		assertEquals(TOPPING_1, line.getTopping());
+		assertEquals(3, line.getCount());
+
+	}
+
+	@Test
+	@Order(4)
+	void amountOrderPerCustomerTest() {
+
+		try {
+			this.getAmountOrderPerCustomerResponse(new TokenDTO("b", "dummy"));
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Invalid Token."));
+		}
+
+		final TokenDTO token = this.login();
+
+		final AmountOrderPerCustomerResponse response = this.getAmountOrderPerCustomerResponse(token);
+		assertEquals(2, response.getData().size());
+
+		AmountOrderPerCustomerDTO line = response.getData().stream()
+				.filter(item -> item.getCustomerId().equals(CUSTOMER_1)).findAny().get();
+
+		assertEquals(36.57, line.getAmount(), 0d);
+
+		line = response.getData().stream().filter(item -> item.getCustomerId().equals(CUSTOMER_2)).findAny().get();
+		assertEquals(58.32, line.getAmount(), 0d);
+
+	}
+
+	@Test
+	@Order(5)
+	void amountPerOrderTest() {
+
+		try {
+			this.getAmountPerOrderResponse(new TokenDTO("b", "dummy"));
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Invalid Token."));
+		}
+
+		final TokenDTO token = this.login();
+
+		final AmountPerOrderResponse response = this.getAmountPerOrderResponse(token);
+		assertEquals(2, response.getData().size());
+
+		response.getData().stream().forEach(item -> {
+			assertTrue(item.getAmount() > 0d);
+			assertNotNull(item.getCheckoutTime());
+			assertNotNull(item.getOrderId());
+		});
+
+	}
+
+	private MostUsedToppingsForDrinkResponse getMostUsedToppingsForDrinkResponse(final TokenDTO token) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("Authorization", "Bearer " + token.getToken());
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		return this.restTemplate.exchange(//
+				this.getServerUrl().concat("/admin/reports/mostusedtoppings"), //
+				HttpMethod.GET, //
+				new HttpEntity<>(httpHeaders), //
+				MostUsedToppingsForDrinkResponse.class).getBody();
+
+	}
+
+	private AmountOrderPerCustomerResponse getAmountOrderPerCustomerResponse(final TokenDTO token) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("Authorization", "Bearer " + token.getToken());
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		return this.restTemplate.exchange(//
+				this.getServerUrl().concat("/admin/reports/amountorderpercustomer"), //
+				HttpMethod.GET, //
+				new HttpEntity<>(httpHeaders), //
+				AmountOrderPerCustomerResponse.class).getBody();
+
+	}
+
+	private AmountPerOrderResponse getAmountPerOrderResponse(final TokenDTO token) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("Authorization", "Bearer " + token.getToken());
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		return this.restTemplate.exchange(//
+				this.getServerUrl().concat("/admin/reports/amountperorder"), //
+				HttpMethod.GET, //
+				new HttpEntity<>(httpHeaders), //
+				AmountPerOrderResponse.class).getBody();
+
+	}
+
 	private CartDTO syncCart(final String cartId, final CartDTO cart) {
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -918,7 +1038,7 @@ class StarbuxCoffeeApplicationTests {
 		this.addProduct(this.getProductDTO("TOPPING 2 description", "TOPPING 2", "TOPPING", 2.20, 0), token);
 	}
 
-	private TokenDTO getToken() {
+	private TokenDTO login() {
 		final LoginDTO loginDTO = new LoginDTO();
 		loginDTO.setLogin("joao.dias@bestseller.com");
 		loginDTO.setPassword("diasadmin");
