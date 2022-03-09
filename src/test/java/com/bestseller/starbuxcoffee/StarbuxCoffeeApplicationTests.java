@@ -1,5 +1,6 @@
 package com.bestseller.starbuxcoffee;
 
+import static com.bestseller.starbuxcoffee.core.BasicMathOperations.truncateDecimal;
 import static java.text.MessageFormat.format;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -437,6 +438,63 @@ class StarbuxCoffeeApplicationTests {
 			assertTrue(e.getMessage().contains("Your customer id is invalid. It's impossible to checkout"));
 		}
 
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
+				ComboItemDTO comboItem = new ComboItemDTO();
+				comboItem.setProduct(products.get(TOPPING_1));
+				item.getSideComboItens().add(comboItem);
+				item.getSideComboItens().add(comboItem);
+				item.getSideComboItens().add(comboItem);
+
+				comboItem = new ComboItemDTO();
+				comboItem.setProduct(products.get(TOPPING_2));
+				item.getSideComboItens().add(comboItem);
+
+				this.addItem(cartId, item);
+
+			}
+		});
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_1)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+				assertTrue(item.getSideComboItens().isEmpty());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_2)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+				assertTrue(item.getSideComboItens().isEmpty());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_3, item.getPrincipalComboItem().getProduct().getName());
+				assertEquals(4, item.getSideComboItens().size());
+			}
+
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19 + 5 + 5 + 5 + 2.2, 2),
+				cart.getOrder().getTotalPrice(), 0.2d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19 + 5 + 5 + 5 + 2.2) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
 		cart = this.checkout(CUSTOMER_1, cartId);
 		assertNotNull(cart);
 		assertNotNull(cart.getCartId());
@@ -453,23 +511,26 @@ class StarbuxCoffeeApplicationTests {
 				assertNotNull(item.getPrincipalComboItem().getId());
 				assertNotNull(item.getPrincipalComboItem().getProduct());
 				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+				assertTrue(item.getSideComboItens().isEmpty());
 			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_2)) {
 				assertNotNull(item.getPrincipalComboItem());
 				assertNotNull(item.getPrincipalComboItem().getId());
 				assertNotNull(item.getPrincipalComboItem().getProduct());
 				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+				assertTrue(item.getSideComboItens().isEmpty());
 			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
 				assertNotNull(item.getPrincipalComboItem());
 				assertNotNull(item.getPrincipalComboItem().getId());
 				assertNotNull(item.getPrincipalComboItem().getProduct());
 				assertEquals(DRINK_3, item.getPrincipalComboItem().getProduct().getName());
+				assertEquals(4, item.getSideComboItens().size());
 			}
-			assertTrue(item.getSideComboItens().isEmpty());
 		});
 
-		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19 + 5 + 5 + 5 + 2.2, 2),
+				cart.getOrder().getTotalPrice(), 0.2d);
 		// Same discount logic
-		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19) * 0.75, 2),
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19 + 5 + 5 + 5 + 2.2) * 0.75, 2),
 				cart.getOrder().getFinalPrice(), 0d);
 		assertEquals(cartId, cart.getCartId());
 
@@ -479,6 +540,265 @@ class StarbuxCoffeeApplicationTests {
 			assertTrue(e.getMessage().contains("Invalid CartClientId"));
 		}
 
+	}
+
+	@Test
+	@Order(2)
+	void cartTest2() {
+		CartDTO cart = this.openCart(CUSTOMER_2);
+		final String cartId = cart.getCartId();
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(0d, cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(0d, cart.getOrder().getTotalPrice(), 0d);
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(0d, cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(0d, cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		final Map<String, ProductDTO> products = this.getProducts()//
+				.getProducts()//
+				.stream() //
+				.collect(toMap(ProductDTO::getName, Function.identity()));
+
+		assertNotNull(products);
+		assertFalse(products.isEmpty());
+		assertEquals(5, products.size());
+
+		ComboDTO combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_2));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(1, cart.getOrder().getCombos().size());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem().getId());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem().getProduct());
+		assertEquals(DRINK_2, cart.getOrder().getCombos().get(0).getPrincipalComboItem().getProduct().getName());
+		assertTrue(cart.getOrder().getCombos().get(0).getSideComboItens().isEmpty());
+		assertEquals(20.19, cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(truncateDecimal(20.19 * 0.75, 2), cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_2));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(2, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19) * 0.75, 2), cart.getOrder().getFinalPrice(),
+				0d);
+		assertEquals(cartId, cart.getCartId());
+
+		combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_2));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19 + 20.19, 2), cart.getOrder().getTotalPrice(),
+				0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19 + 20.19) - 20.19, 2),
+				cart.getOrder().getFinalPrice(), 1d);
+		assertEquals(cartId, cart.getCartId());
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19 + 20.19, 2), cart.getOrder().getTotalPrice(),
+				0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19 + 20.19) - 20.19, 2),
+				cart.getOrder().getFinalPrice(), 1d);
+		assertEquals(cartId, cart.getCartId());
+
+		try {
+			cart = this.checkout(CUSTOMER_DUMMY, cartId);
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Your customer id is invalid. It's impossible to checkout"));
+		}
+
+		cart.getOrder().getCombos().stream().findAny().ifPresent(item -> {
+			ComboItemDTO comboItem = new ComboItemDTO();
+			comboItem.setProduct(products.get(TOPPING_1));
+			item.getSideComboItens().add(comboItem);
+			item.getSideComboItens().add(comboItem);
+			item.getSideComboItens().add(comboItem);
+
+			comboItem = new ComboItemDTO();
+			comboItem.setProduct(products.get(TOPPING_2));
+			item.getSideComboItens().add(comboItem);
+
+			this.addItem(cartId, item);
+
+		});
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			if (!item.getSideComboItens().isEmpty()) {
+				assertEquals(4, item.getSideComboItens().size());
+			}
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2, 2),
+				cart.getOrder().getTotalPrice(), 0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 1d);
+		assertEquals(cartId, cart.getCartId());
+
+		cart = this.syncCart(cartId, cart);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			if (!item.getSideComboItens().isEmpty()) {
+				assertEquals(4, item.getSideComboItens().size());
+			}
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2, 2),
+				cart.getOrder().getTotalPrice(), 0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 1d);
+		assertEquals(cartId, cart.getCartId());
+
+		cart = this.checkout(CUSTOMER_2, cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			assertNotNull(item.getPrincipalComboItem());
+			assertNotNull(item.getPrincipalComboItem().getId());
+			assertNotNull(item.getPrincipalComboItem().getProduct());
+			assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+
+			if (!item.getSideComboItens().isEmpty()) {
+				assertEquals(4, item.getSideComboItens().size());
+			}
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2, 2),
+				cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(BasicMathOperations.truncateDecimal((20.19 + 20.19 + 20.19 + 5 + 5 + 5 + 2.2) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 1d);
+		assertEquals(cartId, cart.getCartId());
+
+		try {
+			cart = this.getCurrentCart(cartId);
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Invalid CartClientId"));
+		}
+
+	}
+
+	private CartDTO syncCart(final String cartId, final CartDTO cart) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		return this.restTemplate.exchange(//
+				this.getServerUrl().concat(format("/cart/{0}/sync", cartId)), //
+				HttpMethod.PUT, //
+				new HttpEntity<>(cart, httpHeaders), //
+				CartDTO.class).getBody();
 	}
 
 	private CartDTO addItem(final String cartId, final ComboDTO combo) {

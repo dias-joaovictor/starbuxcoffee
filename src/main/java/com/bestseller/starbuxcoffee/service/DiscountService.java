@@ -29,8 +29,10 @@ public class DiscountService {
 				order.setFinalPrice(order.getTotalPrice());
 			} else if (logicOneCalculus == 0d) {
 				order.setFinalPrice(logicTwoCalculus);
-			} else {
+			} else if (logicTwoCalculus == 0d) {
 				order.setFinalPrice(logicOneCalculus);
+			} else {
+				order.setFinalPrice(logicOneCalculus < logicTwoCalculus ? logicOneCalculus : logicTwoCalculus);
 			}
 		}
 
