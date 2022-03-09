@@ -1,5 +1,6 @@
 package com.bestseller.starbuxcoffee.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class ComboService {
 	}
 
 	public OrderDTO populateOrder(final Order order) {
-		final List<Combo> combos = this.comboRepository.findAllByOrder(order);
+		final List<Combo> combos = this.getComboByOrder(order);
 
 		final Map<String, ComboDTO> combosDTO = new HashMap<>();
 		combos.stream().filter(combo -> combo.getPrincipalCombo() == null).forEach(combo -> {
@@ -65,6 +66,12 @@ public class ComboService {
 		final OrderDTO orderDTO = order.toDTO();
 		orderDTO.setCombos(combosDTO.values().stream().collect(Collectors.toList()));
 		return orderDTO;
+	}
+
+	private List<Combo> getComboByOrder(final Order order) {
+		final List<Combo> combos = this.comboRepository.findAllByOrderOrderByCreatedAt(order);
+		Collections.sort(combos);
+		return combos;
 	}
 
 	private ComboItemDTO getComboItemDTO(final Combo combo) {
@@ -157,7 +164,7 @@ public class ComboService {
 	}
 
 	private void removeAllCombos(final Order order, final OrderDTO orderDTO) {
-		final List<Combo> combos = this.comboRepository.findAllByOrder(order);
+		final List<Combo> combos = this.getComboByOrder(order);
 		combos.stream().filter(combo -> combo.getPrincipalCombo() != null).forEach(this.comboRepository::delete);
 		combos.stream().filter(combo -> combo.getPrincipalCombo() == null).forEach(this.comboRepository::delete);
 	}

@@ -69,6 +69,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		this.bypassAllFilters.add("/h2-console/**");
 		this.bypassAllFilters.add("/h2/**");
 		this.bypassAllFilters.add("/actuator/health");
+		this.bypassAllFilters.add("/products/**");
 
 		this.shouldFilterCartFilter.add("/cart/**");
 
@@ -78,6 +79,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.POST, "/auth/**").permitAll()//
 				.antMatchers("/auth/test/**").permitAll()//
 				.antMatchers("/cart/**").permitAll()//
+				.antMatchers("/products/**").permitAll()//
 				.antMatchers("/h2/**").permitAll() //
 				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
 				.antMatchers("/admin/**").authenticated()//

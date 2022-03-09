@@ -15,6 +15,6 @@ public interface ComboRepository extends JpaRepository<Combo, UUID> {
 
 	Optional<Combo> findByIdAndOrder(UUID fromString, Order order);
 
-	List<Combo> findAllByOrder(Order order);
+	List<Combo> findAllByOrderOrderByCreatedAt(Order order);
 
 }

@@ -1,5 +1,7 @@
 package com.bestseller.starbuxcoffee;
 
+import static java.text.MessageFormat.format;
+import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -11,9 +13,13 @@ import static org.junit.Assert.assertTrue;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -25,6 +31,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import com.bestseller.starbuxcoffee.core.BasicMathOperations;
+import com.bestseller.starbuxcoffee.dto.CartDTO;
+import com.bestseller.starbuxcoffee.dto.ComboDTO;
+import com.bestseller.starbuxcoffee.dto.ComboItemDTO;
+import com.bestseller.starbuxcoffee.dto.CustomerInfoDTO;
 import com.bestseller.starbuxcoffee.dto.ProductDTO;
 import com.bestseller.starbuxcoffee.dto.ProductsDTO;
 import com.bestseller.starbuxcoffee.repository.PriceRepository;
@@ -34,7 +45,14 @@ import com.bestseller.starbuxcoffee.security.model.User;
 import com.bestseller.starbuxcoffee.security.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(OrderAnnotation.class)
 class StarbuxCoffeeApplicationTests {
+
+	private static final String CUSTOMER_1 = "14228098875";
+
+	private static final String CUSTOMER_2 = "14228098848";
+
+	private static final String CUSTOMER_DUMMY = "DUMMY";
 
 	@Autowired
 	UserRepository userRepository;
@@ -48,6 +66,12 @@ class StarbuxCoffeeApplicationTests {
 	@Autowired
 	PriceRepository priceRepository;
 
+	public static final String DRINK_1 = "DRINK 1";
+	public static final String DRINK_2 = "DRINK 2";
+	public static final String DRINK_3 = "DRINK 3";
+	public static final String TOPPING_1 = "TOPPING 1";
+	public static final String TOPPING_2 = "TOPPING 2";
+
 	private String getServerUrl() {
 		return MessageFormat.format("http://localhost:{0,number,#}/api", this.localServerPort);
 	}
@@ -59,14 +83,14 @@ class StarbuxCoffeeApplicationTests {
 		this.userRepository.findAll().forEach(users::add);
 		assertThat(users.size()).isEqualTo(3);
 		final TokenDTO token = this.getToken();
-		ProductsDTO products = this.getProducts(token);
+		ProductsDTO products = this.getProducts();
 
 		assertNotNull(products);
 		assertTrue(products.getProducts().isEmpty());
 
 		this.populate(token);
 
-		products = this.getProducts(token);
+		products = this.getProducts();
 
 		assertNotNull(products);
 		assertFalse(products.getProducts().isEmpty());
@@ -96,13 +120,13 @@ class StarbuxCoffeeApplicationTests {
 			assertTrue(e.getMessage().contains("Price must be Greater than Zero"));
 		}
 
-		products = this.getProducts(token);
+		products = this.getProducts();
 
 		assertNotNull(products);
 		assertFalse(products.getProducts().isEmpty());
 		assertEquals(5, products.getProducts().size());
 
-		ProductDTO product = this.getProductById(1, token);
+		ProductDTO product = this.getProductById(1);
 
 		assertNotNull(product);
 		assertEquals(1, product.getId());
@@ -113,7 +137,7 @@ class StarbuxCoffeeApplicationTests {
 		assertEquals("DRINK", product.getProductType());
 
 		this.addProduct(this.getProductDTO("TO Delete ITEM description", "TO DELETE DRINK", "DRINK", 12.80, 0), token);
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -128,7 +152,7 @@ class StarbuxCoffeeApplicationTests {
 
 		this.updateProduct(product, token);
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -143,7 +167,7 @@ class StarbuxCoffeeApplicationTests {
 
 		this.updateProduct(product, token);
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -163,7 +187,7 @@ class StarbuxCoffeeApplicationTests {
 
 		this.updateProduct(product, token);
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -182,7 +206,7 @@ class StarbuxCoffeeApplicationTests {
 			assertTrue(e.getMessage().contains("Product with Type: DRINK and Name: DRINK 1 already exists"));
 		}
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -202,7 +226,7 @@ class StarbuxCoffeeApplicationTests {
 					.contains("It's impossible to change the product type. You must to create a new Product."));
 		}
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -221,7 +245,7 @@ class StarbuxCoffeeApplicationTests {
 			assertTrue(e.getMessage().contains("Product type is invalid. Valid Types: "));
 		}
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 
 		assertNotNull(product);
 		assertEquals(6, product.getId());
@@ -234,9 +258,256 @@ class StarbuxCoffeeApplicationTests {
 
 		this.deleteProduct(6, token);
 
-		product = this.getProductById(6, token);
+		product = this.getProductById(6);
 		assertNull(product);
 
+	}
+
+	@Test
+	@Order(1)
+	void cartTest1() {
+		CartDTO cart = this.openCart(CUSTOMER_1);
+		final String cartId = cart.getCartId();
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(0d, cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(0d, cart.getOrder().getTotalPrice(), 0d);
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(0d, cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(0d, cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		final Map<String, ProductDTO> products = this.getProducts()//
+				.getProducts()//
+				.stream() //
+				.collect(toMap(ProductDTO::getName, Function.identity()));
+
+		assertNotNull(products);
+		assertFalse(products.isEmpty());
+		assertEquals(5, products.size());
+
+		ComboDTO combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_1));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(1, cart.getOrder().getCombos().size());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem().getId());
+		assertNotNull(cart.getOrder().getCombos().get(0).getPrincipalComboItem().getProduct());
+		assertEquals(DRINK_1, cart.getOrder().getCombos().get(0).getPrincipalComboItem().getProduct().getName());
+		assertTrue(cart.getOrder().getCombos().get(0).getSideComboItens().isEmpty());
+		assertEquals(10.19, cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(10.19, cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_2));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(2, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_1)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+			} else {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			}
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19) * 0.75, 2), cart.getOrder().getFinalPrice(),
+				0d);
+		assertEquals(cartId, cart.getCartId());
+
+		combo = new ComboDTO();
+		combo.setPrincipalComboItem(new ComboItemDTO());
+		combo.getPrincipalComboItem().setProduct(products.get(DRINK_3));
+
+		cart = this.addItem(cartId, combo);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_1)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_2)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_3, item.getPrincipalComboItem().getProduct().getName());
+			}
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		cart = this.getCurrentCart(cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_1)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_2)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_3, item.getPrincipalComboItem().getProduct().getName());
+			}
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		try {
+			cart = this.checkout(CUSTOMER_DUMMY, cartId);
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Your customer id is invalid. It's impossible to checkout"));
+		}
+
+		cart = this.checkout(CUSTOMER_1, cartId);
+		assertNotNull(cart);
+		assertNotNull(cart.getCartId());
+		assertNotNull(cart.getExpiresAt());
+		assertNotEquals(0l, cart.getRemainingTime());
+		assertNotNull(cart.getOrder());
+		assertNotNull(cart.getOrder().getId());
+		assertNotNull(cart.getOrder().getCombos());
+		assertEquals(3, cart.getOrder().getCombos().size());
+
+		cart.getOrder().getCombos().stream().forEach(item -> {
+			if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_1)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_1, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_2)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_2, item.getPrincipalComboItem().getProduct().getName());
+			} else if (item.getPrincipalComboItem().getProduct().getName().equals(DRINK_3)) {
+				assertNotNull(item.getPrincipalComboItem());
+				assertNotNull(item.getPrincipalComboItem().getId());
+				assertNotNull(item.getPrincipalComboItem().getProduct());
+				assertEquals(DRINK_3, item.getPrincipalComboItem().getProduct().getName());
+			}
+			assertTrue(item.getSideComboItens().isEmpty());
+		});
+
+		assertEquals(BasicMathOperations.truncateDecimal(10.19 + 20.19 + 1.19, 2), cart.getOrder().getTotalPrice(), 0d);
+		// Same discount logic
+		assertEquals(BasicMathOperations.truncateDecimal((10.19 + 20.19 + 1.19) * 0.75, 2),
+				cart.getOrder().getFinalPrice(), 0d);
+		assertEquals(cartId, cart.getCartId());
+
+		try {
+			cart = this.getCurrentCart(cartId);
+		} catch (final Exception e) {
+			assertTrue(e.getMessage().contains("Invalid CartClientId"));
+		}
+
+	}
+
+	private CartDTO addItem(final String cartId, final ComboDTO combo) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		return this.restTemplate.exchange(//
+				this.getServerUrl().concat(format("/cart/{0}/item", cartId)), //
+				HttpMethod.PUT, //
+				new HttpEntity<>(combo, httpHeaders), //
+				CartDTO.class).getBody();
+	}
+
+	private CartDTO checkout(final String clientId, final String cartId) {
+		final CustomerInfoDTO customerInfo = new CustomerInfoDTO(clientId);
+		return this.restTemplate.postForEntity(//
+				this.getServerUrl().concat(format("/cart/{0}/checkout", cartId)), //
+				customerInfo, //
+				CartDTO.class)//
+				.getBody();
+	}
+
+	private CartDTO openCart(final String clientId) {
+		final CustomerInfoDTO customerInfo = new CustomerInfoDTO(clientId);
+		return this.restTemplate.postForEntity(this.getServerUrl().concat("/cart/open"), customerInfo, CartDTO.class)
+				.getBody();
+	}
+
+	private CartDTO getCurrentCart(final String cartId) {
+		return this.restTemplate.getForEntity(this.getServerUrl().concat("/cart/" + cartId), CartDTO.class).getBody();
 	}
 
 	private void addProduct(final ProductDTO productDTO, final TokenDTO token) {
@@ -290,12 +561,11 @@ class StarbuxCoffeeApplicationTests {
 		return dto;
 	}
 
-	private ProductsDTO getProducts(final TokenDTO token) {
+	private ProductsDTO getProducts() {
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.add("Authorization", "Bearer " + token.getToken());
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		final ResponseEntity<ProductsDTO> responseEntity = this.restTemplate.exchange(//
-				this.getServerUrl().concat("/admin/products"), //
+				this.getServerUrl().concat("/products"), //
 				HttpMethod.GET, //
 				new HttpEntity<>(null, httpHeaders), //
 				ProductsDTO.class);
@@ -303,12 +573,11 @@ class StarbuxCoffeeApplicationTests {
 		return responseEntity.getBody();
 	}
 
-	private ProductDTO getProductById(final int id, final TokenDTO token) {
+	private ProductDTO getProductById(final int id) {
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.add("Authorization", "Bearer " + token.getToken());
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		final ResponseEntity<ProductDTO> responseEntity = this.restTemplate.exchange(//
-				this.getServerUrl().concat("/admin/products/" + id), //
+				this.getServerUrl().concat("/products/" + id), //
 				HttpMethod.GET, //
 				new HttpEntity<>(null, httpHeaders), //
 				ProductDTO.class);

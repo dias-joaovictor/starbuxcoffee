@@ -20,7 +20,7 @@ import com.bestseller.starbuxcoffee.dto.ComboItemDTO;
 
 @Entity
 @Table(name = "STB_COMBO")
-public class Combo extends BaseModel {
+public class Combo extends BaseModel implements Comparable<Combo> {
 
 	private static final long serialVersionUID = -537976388770839236L;
 
@@ -87,6 +87,12 @@ public class Combo extends BaseModel {
 		combo.setOrder(order);
 		combo.setPrice(principalComboItem.getProduct().getPriceItem());
 		return combo;
+	}
+
+	@Override
+	public int compareTo(final Combo o) {
+		return o == null || o.getCreatedAt() == null || this.getCreatedAt() == null ? 0
+				: this.getCreatedAt().compareTo(o.getCreatedAt());
 	}
 
 }

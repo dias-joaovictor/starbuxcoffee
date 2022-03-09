@@ -17,7 +17,7 @@ import com.bestseller.starbuxcoffee.service.ProductService;
 
 @RestController
 @RequestMapping("/admin/products")
-public class ProductEndpoint {
+public class AdminProductsEndpoint {
 
 	@Autowired
 	ProductService service;

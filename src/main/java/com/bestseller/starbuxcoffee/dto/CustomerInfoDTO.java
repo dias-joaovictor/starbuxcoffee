@@ -12,6 +12,11 @@ public class CustomerInfoDTO implements Serializable {
 		super();
 	}
 
+	public CustomerInfoDTO(final String customerId) {
+		super();
+		this.customerId = customerId;
+	}
+
 	public String getCustomerId() {
 		return this.customerId;
 	}

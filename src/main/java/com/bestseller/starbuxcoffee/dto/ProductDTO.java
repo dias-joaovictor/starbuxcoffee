@@ -96,4 +96,10 @@ public class ProductDTO implements Serializable {
 		return this.priceItem;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("ProductDTO [id=%s, priceId=%s, productType=%s, name=%s, description=%s, price=%s]",
+				this.id, this.priceId, this.productType, this.name, this.description, this.price);
+	}
+
 }
