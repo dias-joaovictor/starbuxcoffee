@@ -1,5 +1,3 @@
-use `starbux-db`;
-
 create table STB_USER(
 	ID int auto_increment,
     EMAIL varchar(50) not null,
@@ -81,70 +79,3 @@ create table STB_COMBO(
     constraint stb_combo_order_fk foreign key (orderId) references STB_ORDER(id),
     constraint stb_combo_autoref_fk foreign key (principalComboId) references STB_COMBO(id)
 );
-
-
-
-
-SELECT 
-	@profile := 'ADMIN-ROLE';
-
-insert into STB_PROFILE(name)
-select
-	@profile
-from dual
-where not exists (
-	select 
-		'*'
-	from STB_PROFILE
-    where name = @profile
-);
-
-
-insert into STB_USER(EMAIL, PASSWORD)
-select 
-	'joao.dias@bestseller.com',
-    '$2a$10$Fc7hWIicAdVTjPVCz3KVY.ywt3G3tLYZwy8yLfJtGmXzeMI3N58Ra'
-from dual
-where not exists (
-	select
-		'*'
-	from STB_USER
-    where email = 'joao.dias@bestseller.com'
-)
-union all
-select 
-	'tl@bestseller.com',
-    '$2a$10$0HHGDTeTrW.4F1c08y8H9e9qoOxWfOCuvVJ37mPOv5LiW9r2EkCve'
-from dual
-where not exists (
-	select
-		'*'
-	from STB_USER
-    where email = 'tl@bestseller.com'
-)
-union all
-select 
-	'admin@bestseller.com',
-    '$2a$10$dk9YZefWunRuy.jlXfLUf.3tzub25Wp7JMYrHGE9yqqZ.yuUL9diS'
-from dual
-where not exists (
-	select
-		'*'
-	from STB_USER
-    where email = 'admin@bestseller.com'
-);
-
-insert into STB_USER_PROFILE(userid, profileid)
-select
-	STB_USER.id,
-    STB_PROFILE.id
-from STB_USER, STB_PROFILE
-where not exists (
-	select 
-		'*'
-	from STB_USER_PROFILE
-    where STB_USER_PROFILE.userid = STB_USER.id
-)
-	and STB_PROFILE.name = 'ADMIN-ROLE';
-
-

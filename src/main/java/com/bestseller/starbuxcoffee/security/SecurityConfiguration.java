@@ -17,10 +17,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.bestseller.starbuxcoffee.security.filter.CartClientIdFilter;
+import com.bestseller.starbuxcoffee.security.filter.TokenAuthenticationFilter;
 import com.bestseller.starbuxcoffee.security.repository.UserRepository;
 import com.bestseller.starbuxcoffee.security.service.AuthenticationService;
-import com.bestseller.starbuxcoffee.security.token.TokenAuthenticationFilter;
 import com.bestseller.starbuxcoffee.security.token.TokenService;
+import com.bestseller.starbuxcoffee.service.CartService;
 
 @EnableWebSecurity
 @Configuration
@@ -35,9 +37,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserRepository repository;
 
+	@Autowired
+	private CartService cartService;
+
 	private List<String> bypassAllFilters;
 
 	private List<String> bypassAllTokenAuthFilter;
+
+	private List<String> shouldFilterCartFilter;
 
 	@Override
 	@Bean
@@ -54,16 +61,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	protected void configure(final HttpSecurity http) throws Exception {
 		this.bypassAllFilters = new ArrayList<>();
 		this.bypassAllTokenAuthFilter = new ArrayList<>();
+		this.shouldFilterCartFilter = new ArrayList<>();
 
 		this.bypassAllFilters.add("/auth/**");
 		this.bypassAllFilters.add("/auth/test/**");
+		this.bypassAllFilters.add("/cart/**");
+		this.bypassAllFilters.add("/h2-console/**");
+		this.bypassAllFilters.add("/h2/**");
 		this.bypassAllFilters.add("/actuator/health");
+		this.bypassAllFilters.add("/products/**");
+
+		this.shouldFilterCartFilter.add("/cart/**");
 
 		this.bypassAllTokenAuthFilter.addAll(this.bypassAllFilters);
 
 		http.authorizeRequests()//
 				.antMatchers(HttpMethod.POST, "/auth/**").permitAll()//
 				.antMatchers("/auth/test/**").permitAll()//
+				.antMatchers("/cart/**").permitAll()//
+				.antMatchers("/products/**").permitAll()//
+				.antMatchers("/h2/**").permitAll() //
 				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
 				.antMatchers("/admin/**").authenticated()//
 				.anyRequest().authenticated()//
@@ -74,7 +91,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.addFilterBefore(//
 						new TokenAuthenticationFilter(this.tokenService, this.repository,
 								this.bypassAllTokenAuthFilter),
-						UsernamePasswordAuthenticationFilter.class);
+						UsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(new CartClientIdFilter(this.shouldFilterCartFilter, this.cartService),
+						TokenAuthenticationFilter.class);
+		http.headers().frameOptions().disable();
 	}
 
 	@Override

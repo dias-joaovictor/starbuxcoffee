@@ -1,4 +1,4 @@
-docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=rootPass MYSQL_DATABASE=starbux-db -e MYSQL_USER=starbux_user -e MYSQL_PASSWORD=starbux_pass mysql
+docker stop -t 0 $(docker ps -q);docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=rootPass -e MYSQL_DATABASE=starbux-db -e MYSQL_USER=starbux_user -e MYSQL_PASSWORD=starbux_pass mysql --lower_case_table_names=1
 
 --Admin credentials
 User: joao.dias@bestseller.com
@@ -9,3 +9,7 @@ Pass: techlead
 
 User: admin@bestseller.com
 Pass: adminbestseller
+
+
+
+entrypoint: "/usr/sbin/mysqld --lower_case_table_names=1"
