@@ -68,8 +68,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		this.bypassAllFilters.add("/cart/**");
 		this.bypassAllFilters.add("/h2-console/**");
 		this.bypassAllFilters.add("/h2/**");
-		this.bypassAllFilters.add("/actuator/health");
+		this.bypassAllFilters.add("/actuator/**");
 		this.bypassAllFilters.add("/products/**");
+		this.bypassAllFilters.add("/swagger-ui/**");
+		this.bypassAllFilters.add("/swagger-ui.html");
+		this.bypassAllFilters.add("/v3/api-docs/**");
 
 		this.shouldFilterCartFilter.add("/cart/**");
 
@@ -81,7 +84,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers("/cart/**").permitAll()//
 				.antMatchers("/products/**").permitAll()//
 				.antMatchers("/h2/**").permitAll() //
-				.antMatchers(HttpMethod.GET, "/actuator/health").permitAll()//
+				.antMatchers("/swagger-ui/**").permitAll() //
+				.antMatchers("/swagger-ui.html").permitAll() //
+				.antMatchers("/v3/api-docs/**").permitAll() //
+				.antMatchers("/actuator/**").permitAll()//
 				.antMatchers("/admin/**").authenticated()//
 				.anyRequest().authenticated()//
 				.and()//
