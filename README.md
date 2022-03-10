@@ -57,6 +57,7 @@ Running the project:
 ### **Easy Way**
 Running via Docker compose:
 > docker-compose -f "docker-compose-remote.yaml" up -d --build
+
 The execution above will run [this](https://hub.docker.com/r/silverfoxjv/starbuxcoffee) image, present on docker hub.
 
 
