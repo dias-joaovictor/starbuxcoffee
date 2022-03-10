@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
 import com.bestseller.starbuxcoffee.core.BasicMathOperations;
@@ -52,6 +53,7 @@ import com.bestseller.starbuxcoffee.security.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(OrderAnnotation.class)
+@TestPropertySource(properties = { "application-description = foo" })
 class StarbuxCoffeeApplicationTests {
 
 	private static final String CUSTOMER_1 = "14228098875";

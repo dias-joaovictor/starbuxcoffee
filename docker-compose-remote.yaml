@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootPass
+      - MYSQL_DATABASE=starbux-db
+      - MYSQL_USER=starbux_user
+      - MYSQL_PASSWORD=starbux_pass
+    command: --lower_case_table_names=1
+    volumes:
+      - ./database:/dump:ro
+      - ./helpers/execdump.sh:/docker-entrypoint-initdb.d/execdump.sh:ro
+  starbux:
+    image: silverfoxjv/starbuxcoffee:v1
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+    depends_on:
+      - mysql
+
+volumes:
+  logvolume01: {}
