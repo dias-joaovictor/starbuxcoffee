@@ -1,0 +1,681 @@
+{
+	"info": {
+		"_postman_id": "737c19ba-986e-4595-b240-fd0b4d87b439",
+		"name": "starbux",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "HealthCheck",
+			"item": [
+				{
+					"name": "Actuator",
+					"protocolProfileBehavior": {
+						"strictSSL": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/actuator/health",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Auth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set token\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.globals.set(\"token\", jsonData.token);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"login\": \"joao.dias@bestseller.com\",\r\n    \"password\": \"diasadmin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get Products",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/products",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/products/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "Get Products",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/products",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Product",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/products/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "New Product - DRINK",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 0,\r\n    \"productType\":\"DRINK\",\r\n    \"name\":\"Produto 5\",\r\n    \"description\":\"Descrição do Produto 5\",\r\n    \"priority\":0,\r\n    \"price\": 10.50\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/admin/products",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "New Product - TOPPING",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 0,\r\n    \"productType\":\"TOPPING\",\r\n    \"name\":\"Topping 4\",\r\n    \"description\":\"Topping\",\r\n    \"priority\":0,\r\n    \"price\": 1.30\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/admin/products",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Product",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": 1,\r\n    \"productType\":\"DRINK\",\r\n    \"name\":\"Produto 1\",\r\n    \"description\":\"Descrição do Produto 1\",\r\n    \"priority\":5,\r\n    \"price\": 20\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/admin/products",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Product",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/products/4",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"products",
+										"4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Reports",
+					"item": [
+						{
+							"name": "Most Used Toppings for Drinks",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/reports/mostusedtoppings",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"reports",
+										"mostusedtoppings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Amount Order Per Customer",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/reports/amountorderpercustomer",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"reports",
+										"amountorderpercustomer"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Amount Per Order",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/admin/reports/amountperorder",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"reports",
+										"amountperorder"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Open Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set token\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.globals.set(\"cartId\", jsonData.cartId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerId\": \"14228098703\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/open",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"open"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Cart",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1 - Add Item to Cart",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"principalComboItem\": {\r\n        \"id\": null,\r\n        \"product\": {\r\n            \"priceId\": 6\r\n        }\r\n    },\r\n    \"sideComboItens\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}/item",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}",
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2 - Add Item to Cart - increment",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"principalComboItem\": {\r\n        \"id\": \"601099f2-bd2a-4cd5-8955-8dd35b0ae450\",\r\n        \"product\": {\r\n            \"id\": 1,\r\n            \"priceId\": 6,\r\n            \"productType\": \"DRINK\",\r\n            \"name\": \"Produto 1\",\r\n            \"description\": \"Descrição do Produto 1\",\r\n            \"priority\": 5,\r\n            \"price\": 10.65\r\n        }\r\n    },\r\n    \"sideComboItens\": [\r\n        {\r\n            \"product\": {\r\n                \"priceId\": 6\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}/item",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}",
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3 - Add Item to Cart - Only Side Item",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"principalComboItem\": null,\r\n    \"sideComboItens\": [\r\n        {\r\n            \"product\": {\r\n                \"priceId\": 6\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}/item",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}",
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sync Cart",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cartId\": \"506f5ea5-7753-417b-bb3a-0275a84257c2\",\r\n    \"expiresAt\": \"2022-03-06T18:42:15\",\r\n    \"remainingTime\": 19,\r\n    \"order\": {\r\n        \"id\": \"68ff2537-47bf-4f5f-afca-f5c0471ab0be\",\r\n        \"totalPrice\": 13.25,\r\n        \"finalPrice\": 9.93,\r\n        \"combos\": [\r\n            {\r\n                \"principalComboItem\": {\r\n                    \"id\": \"2c568a06-dfc3-4ece-b475-c17a38cc6ff0\",\r\n                    \"product\": {\r\n                        \"id\": 1,\r\n                        \"priceId\": 6,\r\n                        \"productType\": \"DRINK\",\r\n                        \"name\": \"Produto 1\",\r\n                        \"description\": \"Descrição do Produto 1\",\r\n                        \"priority\": 5,\r\n                        \"price\": 10.65\r\n                    }\r\n                },\r\n                \"sideComboItens\": [\r\n                    {\r\n                        \"id\": \"0d1c93ea-be4d-4e0c-a388-1a1e23d258dd\",\r\n                        \"product\": {\r\n                            \"id\": 7,\r\n                            \"priceId\": 8,\r\n                            \"productType\": \"TOPPING\",\r\n                            \"name\": \"Topping 1\",\r\n                            \"description\": \"Topping\",\r\n                            \"priority\": 0,\r\n                            \"price\": 1.3\r\n                        }\r\n                    }\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}/sync",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}",
+								"sync"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Set token\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.globals.set(\"cartId\", jsonData.cartId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerId\": \"14228098703\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/cart/{{cartId}}/checkout",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"{{cartId}}",
+								"checkout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
